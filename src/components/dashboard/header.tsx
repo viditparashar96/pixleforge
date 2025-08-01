@@ -43,7 +43,7 @@ export function Header({ onMobileMenuToggle, onSidebarToggle }: HeaderProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="hidden"
+            className="lg:hidden"
             onClick={onMobileMenuToggle}
           >
             <Menu className="h-6 w-6" />
@@ -131,7 +131,10 @@ export function Header({ onMobileMenuToggle, onSidebarToggle }: HeaderProps) {
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-border/50" />
               <div className="p-2 space-y-1">
-                <DropdownMenuItem asChild className="rounded-xl p-3 focus:bg-accent/50 cursor-pointer transition-colors">
+                <DropdownMenuItem
+                  asChild
+                  className="rounded-xl p-3 focus:bg-accent/50 cursor-pointer transition-colors"
+                >
                   <Link href="/dashboard/settings">
                     <Settings className="mr-3 h-4 w-4 text-muted-foreground" />
                     <span className="font-medium">Settings</span>
