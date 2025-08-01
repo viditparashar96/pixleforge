@@ -75,14 +75,23 @@ function SignInForm() {
         redirect: false,
       });
 
+      console.log("SignIn result:", result);
+
       if (result?.error) {
+        console.error("SignIn error:", result.error);
         toast.error("Invalid email or password");
         return;
       }
 
-      toast.success("Successfully signed in!");
-      router.push(callbackUrl);
-      router.refresh();
+      if (result?.ok) {
+        toast.success("Successfully signed in!");
+        console.log("Redirecting to:", callbackUrl);
+        router.push(callbackUrl);
+        router.refresh();
+      } else {
+        console.error("SignIn failed without specific error:", result);
+        toast.error("Sign in failed. Please try again.");
+      }
     } catch (error) {
       console.error("Sign in error:", error);
       toast.error("Something went wrong. Please try again.");
