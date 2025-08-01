@@ -1,103 +1,126 @@
-import Image from "next/image";
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import Link from "next/link";
+import { Shield, ArrowRight, Users, FolderOpen, Lock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { ThemeSettingsPanel } from "@/components/ui/theme-settings-panel";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/dashboard");
+    }
+  }, [status, router]);
+
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (status === "authenticated") {
+    return null; // Will redirect
+  }
+
+  return (
+    <div className="min-h-screen gradient-hero relative overflow-hidden">
+      {/* Theme Controls - Fixed Position */}
+      <div className="fixed top-4 right-4 z-50 flex items-center gap-2 glass p-2 rounded-xl border border-border/50">
+        <ThemeToggle />
+        <ThemeSettingsPanel />
+      </div>
+
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full animate-float opacity-20" style={{background: 'var(--gradient-primary)'}}></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full animate-float opacity-20" style={{background: 'var(--gradient-secondary)', animationDelay: '1s'}}></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full animate-float opacity-10" style={{background: 'var(--gradient-accent)', animationDelay: '2s'}}></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="flex flex-col items-center justify-center min-h-screen py-12">
+          <div className="text-center space-y-8 animate-scale-in">
+            <div className="flex items-center justify-center space-x-4 mb-6">
+              <div className="relative">
+                <Shield className="h-16 w-16 text-primary animate-glow" />
+                <div className="absolute inset-0 h-16 w-16 animate-pulse">
+                  <Shield className="h-16 w-16 text-primary opacity-50" />
+                </div>
+              </div>
+              <div>
+                <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-primary via-chart-2 to-chart-3 bg-clip-text text-transparent">
+                  PixelForge
+                </h1>
+                <h2 className="text-3xl md:text-4xl font-bold text-neon mt-2">
+                  Nexus
+                </h2>
+              </div>
+            </div>
+            
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              The <span className="font-semibold gradient-primary bg-clip-text text-transparent">ultimate game development</span> project management system. 
+              Streamline your workflow with cutting-edge collaboration tools, 
+              role-based security, and real-time project tracking.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20 max-w-5xl mx-auto">
+              <div className="text-center space-y-6 card-glow bg-card/50 backdrop-blur-sm p-8 rounded-2xl feature-highlight">
+                <div className="mx-auto h-16 w-16 gradient-primary rounded-2xl flex items-center justify-center shadow-lg">
+                  <Users className="h-8 w-8 text-primary-foreground" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground">Team Collaboration</h3>
+                <p className="text-muted-foreground">
+                  Organize your dev teams with advanced role management, 
+                  real-time communication, and seamless project assignments.
+                </p>
+              </div>
+
+              <div className="text-center space-y-6 card-glow bg-card/50 backdrop-blur-sm p-8 rounded-2xl feature-highlight">
+                <div className="mx-auto h-16 w-16 gradient-secondary rounded-2xl flex items-center justify-center shadow-lg">
+                  <FolderOpen className="h-8 w-8 text-primary-foreground" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground">Smart Project Tracking</h3>
+                <p className="text-muted-foreground">
+                  Monitor milestones, track deliverables, and visualize progress 
+                  with intuitive dashboards and automated reporting.
+                </p>
+              </div>
+
+              <div className="text-center space-y-6 card-glow bg-card/50 backdrop-blur-sm p-8 rounded-2xl feature-highlight">
+                <div className="mx-auto h-16 w-16 gradient-accent rounded-2xl flex items-center justify-center shadow-lg">
+                  <Lock className="h-8 w-8 text-primary-foreground" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground">Enterprise Security</h3>
+                <p className="text-muted-foreground">
+                  Bank-level encryption, multi-factor authentication, 
+                  and granular access controls to protect your IP.
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-12 space-y-4">
+              <Button asChild size="lg" className="btn-primary-glow text-lg px-8 py-4 rounded-xl font-semibold border-0">
+                <Link href="/auth/signin">
+                  Launch Your Game Dev Journey
+                  <ArrowRight className="ml-3 h-5 w-5" />
+                </Link>
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                Join thousands of game developers worldwide
+              </p>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
   );
 }
