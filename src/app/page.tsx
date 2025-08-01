@@ -80,9 +80,9 @@ export default function Home() {
 
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               The{" "}
-              <span className="font-semibold gradient-primary bg-clip-text text-transparent">
-                ultimate game development
-              </span>{" "}
+              {/* <span className="font-semibold gradient-primary bg-clip-text text-transparent"> */}
+              ultimate game development
+              {/* </span>{" "} */}
               project management system. Streamline your workflow with
               cutting-edge collaboration tools, role-based security, and
               real-time project tracking.

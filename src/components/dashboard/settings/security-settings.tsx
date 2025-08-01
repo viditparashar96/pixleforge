@@ -505,7 +505,7 @@ Keep these codes safe and secure!`;
               </div>
 
               {/* Debug Info */}
-              {mfaSetupData.debug && (
+              {/* {mfaSetupData.debug && (
                 <div className="space-y-2 p-3 bg-muted/30 rounded-lg">
                   <Label className="text-xs font-medium text-muted-foreground">
                     Debug Info
@@ -519,7 +519,7 @@ Keep these codes safe and secure!`;
                     seconds.
                   </p>
                 </div>
-              )}
+              )} */}
 
               <div className="space-y-2">
                 <Label htmlFor="verificationCode">Verification Code</Label>
