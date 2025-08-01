@@ -31,22 +31,36 @@ export async function GET(request: NextRequest) {
         signed: signedUrl,
       },
       tests: {
-        direct: null as any,
-        unsigned: null as any,
-        signed: null as any,
+        direct: null as
+          | { status: number; ok: boolean; headers: Record<string, string> }
+          | { error: string }
+          | null,
+        unsigned: null as
+          | { status: number; ok: boolean; headers: Record<string, string> }
+          | { error: string }
+          | null,
+        signed: null as
+          | { status: number; ok: boolean; headers: Record<string, string> }
+          | { error: string }
+          | null,
       },
     };
 
     // Test each URL
     try {
+      if (!directUrl) {
+        throw new Error("Direct URL generation failed");
+      }
       const directResponse = await fetch(directUrl, { method: "HEAD" });
       testResults.tests.direct = {
         status: directResponse.status,
         ok: directResponse.ok,
         headers: Object.fromEntries(directResponse.headers.entries()),
       };
-    } catch (error: any) {
-      testResults.tests.direct = { error: error.message };
+    } catch (error: unknown) {
+      testResults.tests.direct = {
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
     }
 
     try {
@@ -56,8 +70,10 @@ export async function GET(request: NextRequest) {
         ok: unsignedResponse.ok,
         headers: Object.fromEntries(unsignedResponse.headers.entries()),
       };
-    } catch (error: any) {
-      testResults.tests.unsigned = { error: error.message };
+    } catch (error: unknown) {
+      testResults.tests.unsigned = {
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
     }
 
     try {
@@ -67,12 +83,17 @@ export async function GET(request: NextRequest) {
         ok: signedResponse.ok,
         headers: Object.fromEntries(signedResponse.headers.entries()),
       };
-    } catch (error: any) {
-      testResults.tests.signed = { error: error.message };
+    } catch (error: unknown) {
+      testResults.tests.signed = {
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
     }
 
     return NextResponse.json(testResults);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 }
+    );
   }
 }

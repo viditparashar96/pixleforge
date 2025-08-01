@@ -1,71 +1,80 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { User } from "@prisma/client"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Checkbox } from "@/components/ui/checkbox"
-import { UserIcon, Mail, Calendar, Shield, Edit, Save, X } from "lucide-react"
-import { formatDistanceToNow } from "date-fns"
-import { updateProfile } from "@/lib/actions/profile"
-import { toast } from "sonner"
-import { useRouter } from "next/navigation"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { updateProfile } from "@/lib/actions/profile";
+import { formatDistanceToNow } from "date-fns";
+import { Calendar, Edit, Mail, Save, Shield, UserIcon, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface ProfileCardProps {
-  user: User
+  user: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    createdAt: Date;
+    mfaEnabled: boolean;
+  };
 }
 
 export function ProfileCard({ user }: ProfileCardProps) {
-  const [isEditing, setIsEditing] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [mfaEnabled, setMfaEnabled] = useState(user.mfaEnabled)
-  const router = useRouter()
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [mfaEnabled, setMfaEnabled] = useState(user.mfaEnabled);
+  const router = useRouter();
 
   const handleSubmit = async (formData: FormData) => {
-    setIsLoading(true)
-    
+    setIsLoading(true);
+
     try {
-      formData.set("mfaEnabled", mfaEnabled.toString())
-      await updateProfile(formData)
-      toast.success("Profile updated successfully")
-      setIsEditing(false)
-      router.refresh()
+      formData.set("mfaEnabled", mfaEnabled.toString());
+      await updateProfile(formData);
+      toast.success("Profile updated successfully");
+      setIsEditing(false);
+      router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to update profile")
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update profile"
+      );
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const getRoleBadge = (role: string) => {
     switch (role) {
       case "ADMIN":
-        return <Badge variant="destructive">Admin</Badge>
+        return <Badge variant="destructive">Admin</Badge>;
       case "PROJECT_LEAD":
-        return <Badge variant="default">Project Lead</Badge>
+        return <Badge variant="default">Project Lead</Badge>;
       case "DEVELOPER":
-        return <Badge variant="secondary">Developer</Badge>
+        return <Badge variant="secondary">Developer</Badge>;
       default:
-        return <Badge variant="outline">{role}</Badge>
+        return <Badge variant="outline">{role}</Badge>;
     }
-  }
+  };
 
   const getRoleColor = (role: string) => {
     switch (role) {
       case "ADMIN":
-        return "bg-red-100 text-red-800"
+        return "bg-red-100 text-red-800";
       case "PROJECT_LEAD":
-        return "bg-blue-100 text-blue-800"
+        return "bg-blue-100 text-blue-800";
       case "DEVELOPER":
-        return "bg-green-100 text-green-800"
+        return "bg-green-100 text-green-800";
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   return (
     <Card>
@@ -90,8 +99,8 @@ export function ProfileCard({ user }: ProfileCardProps) {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  setIsEditing(false)
-                  setMfaEnabled(user.mfaEnabled)
+                  setIsEditing(false);
+                  setMfaEnabled(user.mfaEnabled);
                 }}
                 disabled={isLoading}
               >
@@ -108,8 +117,11 @@ export function ProfileCard({ user }: ProfileCardProps) {
             {/* Avatar and Basic Info */}
             <div className="flex items-center gap-4">
               <Avatar className="h-20 w-20">
-                <AvatarFallback className={`text-lg ${getRoleColor(user.role)}`}>
-                  {user.firstName[0]}{user.lastName[0]}
+                <AvatarFallback
+                  className={`text-lg ${getRoleColor(user.role)}`}
+                >
+                  {user.firstName[0]}
+                  {user.lastName[0]}
                 </AvatarFallback>
               </Avatar>
               <div className="space-y-2">
@@ -133,14 +145,19 @@ export function ProfileCard({ user }: ProfileCardProps) {
                 <div className="flex items-center gap-2 text-sm">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span>
-                    {new Date(user.createdAt).toLocaleDateString()} 
-                    ({formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })})
+                    {new Date(user.createdAt).toLocaleDateString()}(
+                    {formatDistanceToNow(new Date(user.createdAt), {
+                      addSuffix: true,
+                    })}
+                    )
                   </span>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Multi-Factor Authentication</Label>
+                <Label className="text-sm font-medium">
+                  Multi-Factor Authentication
+                </Label>
                 <div className="flex items-center gap-2">
                   <Shield className="h-4 w-4 text-muted-foreground" />
                   <Badge variant={user.mfaEnabled ? "default" : "outline"}>
@@ -157,9 +174,11 @@ export function ProfileCard({ user }: ProfileCardProps) {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Last Updated</Label>
+                <Label className="text-sm font-medium">Member Since</Label>
                 <div className="text-sm text-muted-foreground">
-                  {formatDistanceToNow(new Date(user.updatedAt), { addSuffix: true })}
+                  {formatDistanceToNow(new Date(user.createdAt), {
+                    addSuffix: true,
+                  })}
                 </div>
               </div>
             </div>
@@ -178,7 +197,7 @@ export function ProfileCard({ user }: ProfileCardProps) {
                   disabled={isLoading}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name</Label>
                 <Input
@@ -191,7 +210,7 @@ export function ProfileCard({ user }: ProfileCardProps) {
                 />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -203,19 +222,19 @@ export function ProfileCard({ user }: ProfileCardProps) {
                 disabled={isLoading}
               />
             </div>
-            
+
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="mfaEnabled"
                 checked={mfaEnabled}
-                onCheckedChange={setMfaEnabled}
+                onCheckedChange={(checked) => setMfaEnabled(checked === true)}
                 disabled={isLoading}
               />
               <Label htmlFor="mfaEnabled" className="text-sm font-medium">
                 Enable Multi-Factor Authentication
               </Label>
             </div>
-            
+
             <div className="flex justify-end">
               <Button type="submit" disabled={isLoading}>
                 <Save className="h-4 w-4 mr-2" />
@@ -226,5 +245,5 @@ export function ProfileCard({ user }: ProfileCardProps) {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

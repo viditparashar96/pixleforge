@@ -1,11 +1,11 @@
 "use server";
 
-import { randomBytes } from "crypto";
-import { db } from "@/lib/db";
 import { hashPassword } from "@/lib/auth";
-import { z } from "zod";
-import { Resend } from "resend";
+import { db } from "@/lib/db";
 import { generatePasswordResetEmailHTML } from "@/lib/email-templates/password-reset";
+import { randomBytes } from "crypto";
+import { Resend } from "resend";
+import { z } from "zod";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -40,7 +40,8 @@ export async function requestPasswordReset(email: string) {
     if (!user) {
       return {
         success: true,
-        message: "If an account with that email exists, a password reset link has been sent.",
+        message:
+          "If an account with that email exists, a password reset link has been sent.",
       };
     }
 
@@ -69,17 +70,22 @@ export async function requestPasswordReset(email: string) {
 
     // Send password reset email
     try {
-      await resend.emails.send({
-        from: process.env.RESEND_FROM_EMAIL || "PixelForge Nexus <noreply@resend.dev>",
+      const res = await resend.emails.send({
+        from:
+          process.env.RESEND_FROM_EMAIL ||
+          "PixelForge Nexus <noreply@resend.dev>",
         to: [user.email],
         subject: "Reset Your PixelForge Nexus Password",
         html: generatePasswordResetEmailHTML({
+          userName: `${user.firstName} ${user.lastName}`,
           userEmail: user.email,
           resetUrl,
-          expirationTime: "1 hour"
+          expirationTime: "1 hour",
         }),
       });
 
+      console.log(`Password reset email sent to ${user.email}`, res);
+      // Log the response for debugging
       console.log(`Password reset email sent to ${user.email}`);
     } catch (emailError) {
       console.error("Failed to send password reset email:", emailError);
@@ -89,7 +95,8 @@ export async function requestPasswordReset(email: string) {
 
     return {
       success: true,
-      message: "If an account with that email exists, a password reset link has been sent.",
+      message:
+        "If an account with that email exists, a password reset link has been sent.",
     };
   } catch (error) {
     console.error("Request password reset error:", error);
@@ -164,7 +171,8 @@ export async function resetPassword(token: string, password: string) {
 
     return {
       success: true,
-      message: "Password reset successfully. You can now sign in with your new password.",
+      message:
+        "Password reset successfully. You can now sign in with your new password.",
     };
   } catch (error) {
     console.error("Reset password error:", error);

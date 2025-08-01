@@ -1,25 +1,24 @@
-import { Suspense } from "react"
-import { getCurrentUser } from "@/lib/actions/auth"
-import { getAllUsers } from "@/lib/actions/users-new"
-import { UsersTable } from "@/components/dashboard/users-table"
-import { UsersTableSkeleton } from "@/components/dashboard/users-table-skeleton"
-import { CreateUserButton } from "@/components/dashboard/create-user-button"
-import { Button } from "@/components/ui/button"
-import { Users, UserPlus } from "lucide-react"
-import { redirect } from "next/navigation"
+import { CreateUserButton } from "@/components/dashboard/create-user-button";
+import { UsersTable } from "@/components/dashboard/users-table";
+import { UsersTableSkeleton } from "@/components/dashboard/users-table-skeleton";
+import { getCurrentUser } from "@/lib/actions/auth";
+import { getAllUsers } from "@/lib/actions/users-new";
+import { Users } from "lucide-react";
+import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
 export default async function UsersPage() {
-  const user = await getCurrentUser()
-  
+  const user = await getCurrentUser();
+
   if (!user) {
-    redirect("/auth/signin")
+    redirect("/auth/signin");
   }
 
   if (user.role !== "ADMIN") {
-    redirect("/dashboard")
+    redirect("/dashboard");
   }
 
-  const users = await getAllUsers()
+  const users = await getAllUsers();
 
   return (
     <div className="space-y-6">
@@ -30,7 +29,7 @@ export default async function UsersPage() {
             Manage user accounts and permissions
           </p>
         </div>
-        
+
         <CreateUserButton />
       </div>
 
@@ -51,5 +50,5 @@ export default async function UsersPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

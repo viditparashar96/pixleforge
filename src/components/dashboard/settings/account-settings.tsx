@@ -1,21 +1,27 @@
 "use client";
 
-import { useState } from "react";
-import { useSession, signOut } from "next-auth/react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { 
-  Trash2, 
-  Download, 
-  AlertTriangle, 
-  FileText,
+import {
+  AlertTriangle,
   Database,
-  LogOut
+  Download,
+  FileText,
+  LogOut,
+  Trash2,
 } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export function AccountSettings() {
@@ -40,7 +46,7 @@ export function AccountSettings() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `pixelforge-data-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `pixelforge-data-${new Date().toISOString().split("T")[0]}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -48,7 +54,9 @@ export function AccountSettings() {
 
       toast.success("Your data has been exported successfully");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to export data");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to export data"
+      );
     } finally {
       setIsExporting(false);
     }
@@ -73,14 +81,20 @@ export function AccountSettings() {
       toast.success("Account deleted successfully");
       await signOut({ callbackUrl: "/" });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to delete account");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete account"
+      );
     } finally {
       setIsDeletingAccount(false);
     }
   };
 
   const confirmDeleteAccount = () => {
-    if (!confirm("Are you absolutely sure you want to delete your account? This action cannot be undone.")) {
+    if (
+      !confirm(
+        "Are you absolutely sure you want to delete your account? This action cannot be undone."
+      )
+    ) {
       return;
     }
     setShowDeleteConfirm(true);
@@ -103,7 +117,9 @@ export function AccountSettings() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <h4 className="text-sm font-medium">What's included in your export:</h4>
+            <h4 className="text-sm font-medium">
+              What&apos;s included in your export:
+            </h4>
             <ul className="text-sm text-muted-foreground space-y-1 ml-4">
               <li className="flex items-center gap-2">
                 <FileText className="h-3 w-3" />
@@ -129,7 +145,9 @@ export function AccountSettings() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium">Export Format</p>
-              <p className="text-sm text-muted-foreground">JSON format with all your data</p>
+              <p className="text-sm text-muted-foreground">
+                JSON format with all your data
+              </p>
             </div>
             <Button onClick={handleExportData} disabled={isExporting}>
               {isExporting ? (
@@ -166,8 +184,8 @@ export function AccountSettings() {
               <p className="font-mono">{session.user.id}</p>
             </div>
             <div>
-              <Label className="text-muted-foreground">Account Created</Label>
-              <p>{new Date(session.user.createdAt).toLocaleDateString()}</p>
+              <Label className="text-muted-foreground">Role</Label>
+              <p className="capitalize">{session.user.role.toLowerCase()}</p>
             </div>
             <div>
               <Label className="text-muted-foreground">Last Login</Label>
@@ -200,7 +218,7 @@ export function AccountSettings() {
                 This will sign you out from all devices and browsers
               </p>
             </div>
-            <Button 
+            <Button
               variant="outline"
               onClick={() => signOut({ callbackUrl: "/auth/signin" })}
             >
@@ -227,7 +245,8 @@ export function AccountSettings() {
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Delete Account</AlertTitle>
             <AlertDescription>
-              Permanently delete your account and all associated data. This action cannot be undone.
+              Permanently delete your account and all associated data. This
+              action cannot be undone.
             </AlertDescription>
           </Alert>
 
@@ -239,7 +258,10 @@ export function AccountSettings() {
           ) : (
             <div className="space-y-4 p-4 border border-destructive/50 rounded-lg bg-destructive/5">
               <div className="space-y-2">
-                <Label htmlFor="deleteConfirmation" className="text-destructive font-medium">
+                <Label
+                  htmlFor="deleteConfirmation"
+                  className="text-destructive font-medium"
+                >
                   Type &quot;DELETE&quot; to confirm account deletion
                 </Label>
                 <Input
@@ -255,7 +277,9 @@ export function AccountSettings() {
                 <Button
                   variant="destructive"
                   onClick={handleDeleteAccount}
-                  disabled={isDeletingAccount || deleteConfirmation !== "DELETE"}
+                  disabled={
+                    isDeletingAccount || deleteConfirmation !== "DELETE"
+                  }
                 >
                   {isDeletingAccount ? (
                     <>
@@ -281,8 +305,9 @@ export function AccountSettings() {
               </div>
 
               <p className="text-xs text-muted-foreground">
-                This will permanently delete your account, all projects, documents, and associated data.
-                Make sure to export your data first if needed.
+                This will permanently delete your account, all projects,
+                documents, and associated data. Make sure to export your data
+                first if needed.
               </p>
             </div>
           )}

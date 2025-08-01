@@ -1,18 +1,13 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Eye, EyeOff } from "lucide-react"
-import { createUser } from "@/lib/actions/auth"
-import { CreateUserSchema, type CreateUserInput } from "@/lib/validations"
-import { toast } from "sonner"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -20,12 +15,28 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { createUser } from "@/lib/actions/auth";
+import { CreateUserSchema, type CreateUserInput } from "@/lib/validations";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 export function CreateUserForm() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
 
   const form = useForm<CreateUserInput>({
     resolver: zodResolver(CreateUserSchema),
@@ -36,27 +47,29 @@ export function CreateUserForm() {
       lastName: "",
       role: "DEVELOPER",
     },
-  })
+  });
 
   const onSubmit = async (data: CreateUserInput) => {
-    setIsLoading(true)
-    
+    setIsLoading(true);
+
     try {
-      const result = await createUser(data)
-      
+      const result = await createUser(data);
+
       if (result.success) {
-        toast.success("User created successfully")
-        router.push("/dashboard/admin/users")
-        router.refresh()
+        toast.success("User created successfully");
+        router.push("/dashboard/admin/users");
+        router.refresh();
       } else {
-        toast.error(result.error || "Failed to create user")
+        toast.error(result.error || "Failed to create user");
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to create user")
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create user"
+      );
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Card>
@@ -134,7 +147,11 @@ export function CreateUserForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Role</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    disabled={isLoading}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select user role" />
@@ -203,5 +220,5 @@ export function CreateUserForm() {
         </Form>
       </CardContent>
     </Card>
-  )
+  );
 }

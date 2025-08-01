@@ -1,46 +1,60 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Edit } from "lucide-react"
-import { updateUser } from "@/lib/actions/users-new"
-import { toast } from "sonner"
-import { useRouter } from "next/navigation"
-import { User } from "@prisma/client"
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { updateUser } from "@/lib/actions/users-new";
+import { User } from "@prisma/client";
+import { Edit } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface EditUserButtonProps {
-  user: User
+  user: User;
 }
 
 export function EditUserButton({ user }: EditUserButtonProps) {
-  const [open, setOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [mfaEnabled, setMfaEnabled] = useState(user.mfaEnabled)
-  const router = useRouter()
+  const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [mfaEnabled, setMfaEnabled] = useState(user.mfaEnabled);
+  const router = useRouter();
 
   const handleSubmit = async (formData: FormData) => {
-    setIsLoading(true)
-    
+    setIsLoading(true);
+
     try {
       // Add the user id and MFA status to formData
-      formData.set("id", user.id)
-      formData.set("mfaEnabled", mfaEnabled.toString())
-      
-      await updateUser(formData)
-      toast.success("User updated successfully")
-      setOpen(false)
-      router.refresh()
+      formData.set("id", user.id);
+      formData.set("mfaEnabled", mfaEnabled.toString());
+
+      await updateUser(formData);
+      toast.success("User updated successfully");
+      setOpen(false);
+      router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to update user")
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update user"
+      );
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -67,7 +81,7 @@ export function EditUserButton({ user }: EditUserButtonProps) {
                 disabled={isLoading}
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="lastName">Last Name</Label>
               <Input
@@ -81,7 +95,7 @@ export function EditUserButton({ user }: EditUserButtonProps) {
               />
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -94,7 +108,7 @@ export function EditUserButton({ user }: EditUserButtonProps) {
               disabled={isLoading}
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="role">Role</Label>
             <Select name="role" defaultValue={user.role} disabled={isLoading}>
@@ -108,19 +122,22 @@ export function EditUserButton({ user }: EditUserButtonProps) {
               </SelectContent>
             </Select>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <Checkbox
               id="mfaEnabled"
               checked={mfaEnabled}
-              onCheckedChange={setMfaEnabled}
+              onCheckedChange={(checked) => setMfaEnabled(checked === true)}
               disabled={isLoading}
             />
-            <Label htmlFor="mfaEnabled" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <Label
+              htmlFor="mfaEnabled"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
               Enable Multi-Factor Authentication
             </Label>
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="newPassword">New Password (optional)</Label>
             <Input
@@ -136,7 +153,7 @@ export function EditUserButton({ user }: EditUserButtonProps) {
               Only enter a new password if you want to change it
             </p>
           </div>
-          
+
           <div className="flex justify-end space-x-2 pt-4">
             <Button
               type="button"
@@ -153,5 +170,5 @@ export function EditUserButton({ user }: EditUserButtonProps) {
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

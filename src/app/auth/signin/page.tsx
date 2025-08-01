@@ -17,11 +17,11 @@ import { ArrowRight, Loader2, Lock, Shield } from "lucide-react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-export default function SignInPage() {
+function SignInForm() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -240,5 +240,32 @@ export default function SignInPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen gradient-hero relative overflow-hidden flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8 relative z-10">
+          <div className="glass p-8 rounded-3xl shadow-2xl animate-scale-in">
+            <div className="text-center mb-8">
+              <div className="mx-auto w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center mb-6 animate-glow">
+                <Shield className="h-8 w-8 text-primary-foreground" />
+              </div>
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent">
+                Welcome Back
+              </h2>
+              <p className="mt-2 text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
+                Loading...
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <SignInForm />
+    </Suspense>
   );
 }

@@ -1,16 +1,16 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { ThemeSettingsPanel } from "@/components/ui/theme-settings-panel";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { ArrowRight, FolderOpen, Lock, Shield, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import Link from "next/link";
-import { Shield, ArrowRight, Users, FolderOpen, Lock } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { ThemeSettingsPanel } from "@/components/ui/theme-settings-panel";
 
 export default function Home() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
@@ -41,9 +41,21 @@ export default function Home() {
 
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full animate-float opacity-20" style={{background: 'var(--gradient-primary)'}}></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full animate-float opacity-20" style={{background: 'var(--gradient-secondary)', animationDelay: '1s'}}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full animate-float opacity-10" style={{background: 'var(--gradient-accent)', animationDelay: '2s'}}></div>
+        <div
+          className="absolute -top-40 -right-40 w-80 h-80 rounded-full animate-float opacity-20"
+          style={{ background: "var(--gradient-primary)" }}
+        ></div>
+        <div
+          className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full animate-float opacity-20"
+          style={{
+            background: "var(--gradient-secondary)",
+            animationDelay: "1s",
+          }}
+        ></div>
+        <div
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full animate-float opacity-10"
+          style={{ background: "var(--gradient-accent)", animationDelay: "2s" }}
+        ></div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -65,11 +77,15 @@ export default function Home() {
                 </h2>
               </div>
             </div>
-            
+
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              The <span className="font-semibold gradient-primary bg-clip-text text-transparent">ultimate game development</span> project management system. 
-              Streamline your workflow with cutting-edge collaboration tools, 
-              role-based security, and real-time project tracking.
+              The{" "}
+              <span className="font-semibold gradient-primary bg-clip-text text-transparent">
+                ultimate game development
+              </span>{" "}
+              project management system. Streamline your workflow with
+              cutting-edge collaboration tools, role-based security, and
+              real-time project tracking.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20 max-w-5xl mx-auto">
@@ -77,9 +93,11 @@ export default function Home() {
                 <div className="mx-auto h-16 w-16 gradient-primary rounded-2xl flex items-center justify-center shadow-lg">
                   <Users className="h-8 w-8 text-primary-foreground" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground">Team Collaboration</h3>
+                <h3 className="text-xl font-bold text-foreground">
+                  Team Collaboration
+                </h3>
                 <p className="text-muted-foreground">
-                  Organize your dev teams with advanced role management, 
+                  Organize your dev teams with advanced role management,
                   real-time communication, and seamless project assignments.
                 </p>
               </div>
@@ -88,9 +106,11 @@ export default function Home() {
                 <div className="mx-auto h-16 w-16 gradient-secondary rounded-2xl flex items-center justify-center shadow-lg">
                   <FolderOpen className="h-8 w-8 text-primary-foreground" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground">Smart Project Tracking</h3>
+                <h3 className="text-xl font-bold text-foreground">
+                  Smart Project Tracking
+                </h3>
                 <p className="text-muted-foreground">
-                  Monitor milestones, track deliverables, and visualize progress 
+                  Monitor milestones, track deliverables, and visualize progress
                   with intuitive dashboards and automated reporting.
                 </p>
               </div>
@@ -99,16 +119,22 @@ export default function Home() {
                 <div className="mx-auto h-16 w-16 gradient-accent rounded-2xl flex items-center justify-center shadow-lg">
                   <Lock className="h-8 w-8 text-primary-foreground" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground">Enterprise Security</h3>
+                <h3 className="text-xl font-bold text-foreground">
+                  Enterprise Security
+                </h3>
                 <p className="text-muted-foreground">
-                  Bank-level encryption, multi-factor authentication, 
-                  and granular access controls to protect your IP.
+                  Bank-level encryption, multi-factor authentication, and
+                  granular access controls to protect your IP.
                 </p>
               </div>
             </div>
 
             <div className="pt-12 space-y-4">
-              <Button asChild size="lg" className="btn-primary-glow text-lg px-8 py-4 rounded-xl font-semibold border-0">
+              <Button
+                asChild
+                size="lg"
+                className="btn-primary-glow text-lg px-8 py-4 rounded-xl font-semibold border-0"
+              >
                 <Link href="/auth/signin">
                   Launch Your Game Dev Journey
                   <ArrowRight className="ml-3 h-5 w-5" />

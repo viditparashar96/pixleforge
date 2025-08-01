@@ -16,7 +16,7 @@ import { getDevelopers } from "@/lib/actions/users-new";
 import { User } from "@prisma/client";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface AssignUserDialogProps {
@@ -24,7 +24,10 @@ interface AssignUserDialogProps {
   assignedUserIds?: string[];
 }
 
-export function AssignUserDialog({ projectId, assignedUserIds = [] }: AssignUserDialogProps) {
+export function AssignUserDialog({
+  projectId,
+  assignedUserIds = [],
+}: AssignUserDialogProps) {
   const [open, setOpen] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
@@ -32,38 +35,36 @@ export function AssignUserDialog({ projectId, assignedUserIds = [] }: AssignUser
   const [loadingUsers, setLoadingUsers] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    if (open) {
-      loadUsers();
-    }
-  }, [open, assignedUserIds]);
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     setLoadingUsers(true);
     try {
       const availableUsers = await getDevelopers();
       // Filter out users already assigned to the project
       const unassignedUsers = availableUsers.filter(
-        user => !assignedUserIds.includes(user.id)
+        (user) => !assignedUserIds.includes(user.id)
       );
       setUsers(unassignedUsers);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load users");
     } finally {
       setLoadingUsers(false);
     }
-  };
+  }, [assignedUserIds]);
+
+  useEffect(() => {
+    if (open) {
+      loadUsers();
+    }
+  }, [open, loadUsers]);
 
   const handleUserToggle = (userId: string, checked: boolean) => {
-    setSelectedUserIds(prev => 
-      checked 
-        ? [...prev, userId]
-        : prev.filter(id => id !== userId)
+    setSelectedUserIds((prev) =>
+      checked ? [...prev, userId] : prev.filter((id) => id !== userId)
     );
   };
 
   const handleSelectAll = (checked: boolean) => {
-    setSelectedUserIds(checked ? users.map(user => user.id) : []);
+    setSelectedUserIds(checked ? users.map((user) => user.id) : []);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -83,7 +84,10 @@ export function AssignUserDialog({ projectId, assignedUserIds = [] }: AssignUser
       });
 
       if (result.success) {
-        toast.success(result.message || `Successfully assigned ${selectedUserIds.length} user(s) to project`);
+        toast.success(
+          result.message ||
+            `Successfully assigned ${selectedUserIds.length} user(s) to project`
+        );
         setOpen(false);
         setSelectedUserIds([]);
         router.refresh();
@@ -134,19 +138,27 @@ export function AssignUserDialog({ projectId, assignedUserIds = [] }: AssignUser
                     Select All ({users.length} users)
                   </Label>
                 </div>
-                
+
                 <ScrollArea className="h-[300px] w-full border rounded-md p-3">
                   <div className="space-y-3">
                     {users.map((user) => (
-                      <div key={user.id} className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50">
+                      <div
+                        key={user.id}
+                        className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50"
+                      >
                         <Checkbox
                           id={user.id}
                           checked={selectedUserIds.includes(user.id)}
-                          onCheckedChange={(checked) => handleUserToggle(user.id, checked as boolean)}
+                          onCheckedChange={(checked) =>
+                            handleUserToggle(user.id, checked as boolean)
+                          }
                           disabled={isLoading}
                         />
                         <div className="flex-1">
-                          <Label htmlFor={user.id} className="text-sm font-medium cursor-pointer">
+                          <Label
+                            htmlFor={user.id}
+                            className="text-sm font-medium cursor-pointer"
+                          >
                             {user.firstName} {user.lastName}
                           </Label>
                           <div className="text-xs text-muted-foreground">
@@ -157,10 +169,11 @@ export function AssignUserDialog({ projectId, assignedUserIds = [] }: AssignUser
                     ))}
                   </div>
                 </ScrollArea>
-                
+
                 {selectedUserIds.length > 0 && (
                   <div className="text-sm text-muted-foreground">
-                    {selectedUserIds.length} user{selectedUserIds.length !== 1 ? 's' : ''} selected
+                    {selectedUserIds.length} user
+                    {selectedUserIds.length !== 1 ? "s" : ""} selected
                   </div>
                 )}
               </>
@@ -176,11 +189,13 @@ export function AssignUserDialog({ projectId, assignedUserIds = [] }: AssignUser
             >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={isLoading || selectedUserIds.length === 0}
             >
-              {isLoading ? "Assigning..." : `Assign ${selectedUserIds.length || ''} User${selectedUserIds.length !== 1 ? 's' : ''}`}
+              {isLoading
+                ? "Assigning..."
+                : `Assign ${selectedUserIds.length || ""} User${selectedUserIds.length !== 1 ? "s" : ""}`}
             </Button>
           </div>
         </form>

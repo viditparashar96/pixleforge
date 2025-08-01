@@ -1,18 +1,24 @@
 "use client";
 
-import { useState } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User, Mail, Calendar, Shield } from "lucide-react";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Calendar, Mail, Shield, User } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export function ProfileSettings() {
   const { data: session, update } = useSession();
@@ -26,7 +32,8 @@ export function ProfileSettings() {
 
   if (!session) return null;
 
-  const userInitials = `${session.user.firstName[0]}${session.user.lastName[0]}`.toUpperCase();
+  const userInitials =
+    `${session.user.firstName[0]}${session.user.lastName[0]}`.toUpperCase();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +53,7 @@ export function ProfileSettings() {
       }
 
       await response.json();
-      
+
       // Update the session
       await update({
         ...session,
@@ -61,17 +68,19 @@ export function ProfileSettings() {
       toast.success("Profile updated successfully");
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to update profile");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update profile"
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleInputChange = (field: keyof typeof formData) => (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setFormData(prev => ({ ...prev, [field]: e.target.value }));
-  };
+  const handleInputChange =
+    (field: keyof typeof formData) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+    };
 
   return (
     <div className="space-y-6">
@@ -109,7 +118,7 @@ export function ProfileSettings() {
                     session.user.role === "DEVELOPER" && "role-developer"
                   )}
                 >
-                  {session.user.role.toLowerCase().replace('_', ' ')}
+                  {session.user.role.toLowerCase().replace("_", " ")}
                 </Badge>
               </div>
             </div>
@@ -120,15 +129,11 @@ export function ProfileSettings() {
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="flex items-center gap-2 text-muted-foreground">
               <Calendar className="h-4 w-4" />
-              <span>
-                Joined {new Date(session.user.createdAt).toLocaleDateString()}
-              </span>
+              <span>Member since {new Date().getFullYear()}</span>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
               <User className="h-4 w-4" />
-              <span>
-                ID: {session.user.id.slice(0, 8)}...
-              </span>
+              <span>ID: {session.user.id.slice(0, 8)}...</span>
             </div>
           </div>
         </CardContent>
@@ -138,9 +143,7 @@ export function ProfileSettings() {
       <Card>
         <CardHeader>
           <CardTitle>Edit Profile</CardTitle>
-          <CardDescription>
-            Update your personal information.
-          </CardDescription>
+          <CardDescription>Update your personal information.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -183,11 +186,13 @@ export function ProfileSettings() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setFormData({
-                  firstName: session.user.firstName,
-                  lastName: session.user.lastName,
-                  email: session.user.email,
-                })}
+                onClick={() =>
+                  setFormData({
+                    firstName: session.user.firstName,
+                    lastName: session.user.lastName,
+                    email: session.user.email || "",
+                  })
+                }
               >
                 Reset
               </Button>

@@ -12,9 +12,9 @@ import { CalendarDays, FileText, User as UserIcon, Users } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 
 interface ProjectPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function ProjectPage({ params }: ProjectPageProps) {
@@ -123,7 +123,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             userRole={user.role}
             canUpload={
               user.role === "ADMIN" ||
-              (user.role === "PROJECT_LEAD" && project.createdById === user.id) ||
+              (user.role === "PROJECT_LEAD" &&
+                project.createdById === user.id) ||
               project.assignments.some((a) => a.userId === user.id)
             }
           />
@@ -143,9 +144,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           />
 
           {/* Actions */}
-          {(user.role === "ADMIN" || 
-            (user.role === "PROJECT_LEAD" && project.createdById === user.id)) && 
-            <ProjectActions project={project} />}
+          {(user.role === "ADMIN" ||
+            (user.role === "PROJECT_LEAD" &&
+              project.createdById === user.id)) && (
+            <ProjectActions project={project} />
+          )}
 
           {/* Timeline */}
           <Card>

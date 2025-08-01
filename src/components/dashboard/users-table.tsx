@@ -1,78 +1,95 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { User } from "@prisma/client"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Edit, Trash2, Mail, Calendar, Search, Filter } from "lucide-react"
-import { formatDistanceToNow } from "date-fns"
-import { EditUserButton } from "./edit-user-button"
-import { DeleteUserButton } from "./delete-user-button"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { User } from "@prisma/client";
+import { formatDistanceToNow } from "date-fns";
+import { Mail, Search } from "lucide-react";
+import { useState } from "react";
+import { DeleteUserButton } from "./delete-user-button";
+import { EditUserButton } from "./edit-user-button";
 
 interface UsersTableProps {
-  users: User[]
-  currentUserId: string
+  users: User[];
+  currentUserId: string;
 }
 
 export function UsersTable({ users, currentUserId }: UsersTableProps) {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [roleFilter, setRoleFilter] = useState<string>("all")
-  const [sortBy, setSortBy] = useState<string>("created")
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("created");
 
   const filteredUsers = users
-    .filter(user => {
-      const matchesSearch = 
+    .filter((user) => {
+      const matchesSearch =
         user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesRole = roleFilter === "all" || user.role === roleFilter
-      return matchesSearch && matchesRole
+        user.email.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesRole = roleFilter === "all" || user.role === roleFilter;
+      return matchesSearch && matchesRole;
     })
     .sort((a, b) => {
       switch (sortBy) {
         case "name":
-          return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`)
+          return `${a.firstName} ${a.lastName}`.localeCompare(
+            `${b.firstName} ${b.lastName}`
+          );
         case "email":
-          return a.email.localeCompare(b.email)
+          return a.email.localeCompare(b.email);
         case "role":
-          return a.role.localeCompare(b.role)
+          return a.role.localeCompare(b.role);
         case "created":
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
         default:
-          return 0
+          return 0;
       }
-    })
+    });
 
   const getRoleBadge = (role: string) => {
     switch (role) {
       case "ADMIN":
-        return <Badge variant="destructive">Admin</Badge>
+        return <Badge variant="destructive">Admin</Badge>;
       case "PROJECT_LEAD":
-        return <Badge variant="default">Project Lead</Badge>
+        return <Badge variant="default">Project Lead</Badge>;
       case "DEVELOPER":
-        return <Badge variant="secondary">Developer</Badge>
+        return <Badge variant="secondary">Developer</Badge>;
       default:
-        return <Badge variant="outline">{role}</Badge>
+        return <Badge variant="outline">{role}</Badge>;
     }
-  }
+  };
 
   const getRoleColor = (role: string) => {
     switch (role) {
       case "ADMIN":
-        return "bg-red-100 text-red-800"
+        return "bg-red-100 text-red-800";
       case "PROJECT_LEAD":
-        return "bg-blue-100 text-blue-800"
+        return "bg-blue-100 text-blue-800";
       case "DEVELOPER":
-        return "bg-green-100 text-green-800"
+        return "bg-green-100 text-green-800";
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   return (
     <div className="space-y-4">
@@ -118,7 +135,8 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
               </SelectContent>
             </Select>
             <div className="text-sm text-muted-foreground flex items-center">
-              {filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''} found
+              {filteredUsers.length} user{filteredUsers.length !== 1 ? "s" : ""}{" "}
+              found
             </div>
           </div>
         </CardContent>
@@ -143,15 +161,20 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
-                      <AvatarFallback className={`text-sm ${getRoleColor(user.role)}`}>
-                        {user.firstName[0]}{user.lastName[0]}
+                      <AvatarFallback
+                        className={`text-sm ${getRoleColor(user.role)}`}
+                      >
+                        {user.firstName[0]}
+                        {user.lastName[0]}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <div className="font-medium">
                         {user.firstName} {user.lastName}
                         {user.id === currentUserId && (
-                          <Badge variant="outline" className="ml-2 text-xs">You</Badge>
+                          <Badge variant="outline" className="ml-2 text-xs">
+                            You
+                          </Badge>
                         )}
                       </div>
                       <div className="text-sm text-muted-foreground">
@@ -166,11 +189,12 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
                     <span className="text-sm">{user.email}</span>
                   </div>
                 </TableCell>
+                <TableCell>{getRoleBadge(user.role)}</TableCell>
                 <TableCell>
-                  {getRoleBadge(user.role)}
-                </TableCell>
-                <TableCell>
-                  <Badge variant={user.mfaEnabled ? "default" : "outline"} className="text-xs">
+                  <Badge
+                    variant={user.mfaEnabled ? "default" : "outline"}
+                    className="text-xs"
+                  >
                     {user.mfaEnabled ? "Enabled" : "Disabled"}
                   </Badge>
                 </TableCell>
@@ -180,7 +204,9 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
                       {new Date(user.createdAt).toLocaleDateString()}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}
+                      {formatDistanceToNow(new Date(user.createdAt), {
+                        addSuffix: true,
+                      })}
                     </div>
                   </div>
                 </TableCell>
@@ -200,12 +226,14 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
 
       {filteredUsers.length === 0 && searchTerm && (
         <div className="text-center py-8">
-          <p className="text-muted-foreground">No users found matching your search criteria.</p>
-          <Button 
-            variant="outline" 
+          <p className="text-muted-foreground">
+            No users found matching your search criteria.
+          </p>
+          <Button
+            variant="outline"
             onClick={() => {
-              setSearchTerm("")
-              setRoleFilter("all")
+              setSearchTerm("");
+              setRoleFilter("all");
             }}
             className="mt-2"
           >
@@ -214,5 +242,5 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
         </div>
       )}
     </div>
-  )
+  );
 }

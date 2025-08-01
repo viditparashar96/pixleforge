@@ -1,15 +1,22 @@
-import { User } from "@prisma/client"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Activity, Calendar, FolderOpen, FileText } from "lucide-react"
-import { getUserActivity } from "@/lib/actions/profile"
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getUserActivity } from "@/lib/actions/profile";
+import { Activity, Calendar, FileText, FolderOpen } from "lucide-react";
 
 interface ActivityCardProps {
-  user: User
+  user: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    createdAt: Date;
+    mfaEnabled: boolean;
+  };
 }
 
 export async function ActivityCard({ user }: ActivityCardProps) {
-  const activity = await getUserActivity()
+  const activity = await getUserActivity();
 
   return (
     <Card>
@@ -82,18 +89,27 @@ export async function ActivityCard({ user }: ActivityCardProps) {
           <h4 className="text-sm font-medium mb-3">Security Status</h4>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">Multi-Factor Authentication</span>
-              <Badge variant={user.mfaEnabled ? "default" : "outline"} className="text-xs">
+              <span className="text-xs text-muted-foreground">
+                Multi-Factor Authentication
+              </span>
+              <Badge
+                variant={user.mfaEnabled ? "default" : "outline"}
+                className="text-xs"
+              >
                 {user.mfaEnabled ? "Enabled" : "Disabled"}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">Account Status</span>
-              <Badge variant="default" className="text-xs">Active</Badge>
+              <span className="text-xs text-muted-foreground">
+                Account Status
+              </span>
+              <Badge variant="default" className="text-xs">
+                Active
+              </Badge>
             </div>
           </div>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

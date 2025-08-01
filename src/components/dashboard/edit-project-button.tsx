@@ -1,51 +1,70 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CalendarIcon, Edit } from "lucide-react"
-import { format } from "date-fns"
-import { cn } from "@/lib/utils"
-import { updateProject } from "@/lib/actions/projects"
-import { toast } from "sonner"
-import { useRouter } from "next/navigation"
-import { Project } from "@prisma/client"
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { updateProject } from "@/lib/actions/projects";
+import { cn } from "@/lib/utils";
+import { Project } from "@prisma/client";
+import { format } from "date-fns";
+import { CalendarIcon, Edit } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface EditProjectButtonProps {
-  project: Project
-  children?: React.ReactNode
+  project: Project;
+  children?: React.ReactNode;
 }
 
-export function EditProjectButton({ project, children }: EditProjectButtonProps) {
-  const [open, setOpen] = useState(false)
-  const [date, setDate] = useState<Date>(new Date(project.deadline))
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
+export function EditProjectButton({
+  project,
+  children,
+}: EditProjectButtonProps) {
+  const [open, setOpen] = useState(false);
+  const [date, setDate] = useState<Date>(new Date(project.deadline));
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (formData: FormData) => {
-    setIsLoading(true)
-    
+    setIsLoading(true);
+
     try {
       // Extract data from formData
       const name = formData.get("name") as string;
       const description = formData.get("description") as string;
-      const status = formData.get("status") as string;
-      
+      const status = formData.get("status") as "ACTIVE" | "COMPLETED";
+
       const updateData = {
         name,
         description,
         deadline: date.toISOString(),
         status,
       };
-      
+
       const result = await updateProject(project.id, updateData);
-      
+
       if (result.success) {
         toast.success("Project updated successfully");
         setOpen(false);
@@ -54,11 +73,13 @@ export function EditProjectButton({ project, children }: EditProjectButtonProps)
         toast.error(result.error || "Failed to update project");
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to update project")
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update project"
+      );
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -86,7 +107,7 @@ export function EditProjectButton({ project, children }: EditProjectButtonProps)
               disabled={isLoading}
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
@@ -100,10 +121,14 @@ export function EditProjectButton({ project, children }: EditProjectButtonProps)
               disabled={isLoading}
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
-            <Select name="status" defaultValue={project.status} disabled={isLoading}>
+            <Select
+              name="status"
+              defaultValue={project.status}
+              disabled={isLoading}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
@@ -113,7 +138,7 @@ export function EditProjectButton({ project, children }: EditProjectButtonProps)
               </SelectContent>
             </Select>
           </div>
-          
+
           <div className="space-y-2">
             <Label>Deadline</Label>
             <Popover>
@@ -135,13 +160,16 @@ export function EditProjectButton({ project, children }: EditProjectButtonProps)
                   mode="single"
                   selected={date}
                   onSelect={setDate}
-                  disabled={(date) => date < new Date() && project.status === "ACTIVE"}
+                  disabled={(date) =>
+                    date < new Date() && project.status === "ACTIVE"
+                  }
                   initialFocus
+                  required
                 />
               </PopoverContent>
             </Popover>
           </div>
-          
+
           <div className="flex justify-end space-x-2 pt-4">
             <Button
               type="button"
@@ -158,5 +186,5 @@ export function EditProjectButton({ project, children }: EditProjectButtonProps)
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

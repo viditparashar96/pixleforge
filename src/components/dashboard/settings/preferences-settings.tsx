@@ -25,24 +25,8 @@ import { toast } from "sonner";
 
 export function PreferencesSettings() {
   const { theme, setTheme } = useTheme();
-  const [notifications, setNotifications] = useState({
-    email: true,
-    push: false,
-    marketing: false,
-    security: true,
-  });
   const [language, setLanguage] = useState("en");
   const [timezone, setTimezone] = useState("UTC");
-
-  const handleNotificationChange =
-    (key: keyof typeof notifications) => (checked: boolean) => {
-      setNotifications((prev) => ({ ...prev, [key]: checked }));
-      toast.success(
-        `${key.charAt(0).toUpperCase() + key.slice(1)} notifications ${
-          checked ? "enabled" : "disabled"
-        }`
-      );
-    };
 
   const handleLanguageChange = (value: string) => {
     setLanguage(value);

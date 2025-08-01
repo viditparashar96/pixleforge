@@ -1,14 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, ArrowLeft, Mail } from "lucide-react";
-import { toast } from "sonner";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -17,8 +10,15 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { requestPasswordReset } from "@/lib/actions/password-reset";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowLeft, Loader2, Mail } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 
 const ForgotPasswordSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -65,7 +65,8 @@ export default function ForgotPasswordPage() {
             Forgot Password
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Enter your email address and we&apos;ll send you a link to reset your password
+            Enter your email address and we&apos;ll send you a link to reset
+            your password
           </p>
         </div>
 
@@ -74,7 +75,10 @@ export default function ForgotPasswordPage() {
             {!emailSent ? (
               <>
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-6"
+                  >
                     <FormField
                       control={form.control}
                       name="email"
@@ -99,7 +103,9 @@ export default function ForgotPasswordPage() {
                       disabled={isLoading}
                       className="w-full"
                     >
-                      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {isLoading && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
                       Send Reset Link
                     </Button>
                   </form>
@@ -125,7 +131,8 @@ export default function ForgotPasswordPage() {
                     Check your email
                   </h3>
                   <p className="mt-2 text-sm text-gray-600">
-                    If an account with that email exists, we&apos;ve sent you a password reset link.
+                    If an account with that email exists, we&apos;ve sent you a
+                    password reset link.
                   </p>
                 </div>
                 <div className="pt-4">

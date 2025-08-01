@@ -84,6 +84,7 @@ export async function POST() {
     }
 
     // Remove sensitive data
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash: _, mfaSecret: __, ...safeUserData } = userData;
 
     // Create export data
@@ -105,14 +106,14 @@ export async function POST() {
         lastUpdated: safeUserData.updatedAt,
       },
       projects: {
-        created: safeUserData.createdProjects.map(project => ({
+        created: safeUserData.createdProjects.map((project) => ({
           id: project.id,
           name: project.name,
           description: project.description,
           deadline: project.deadline,
           status: project.status,
           createdAt: project.createdAt,
-          teamMembers: project.assignments.map(assignment => ({
+          teamMembers: project.assignments.map((assignment) => ({
             userId: assignment.user.id,
             email: assignment.user.email,
             name: `${assignment.user.firstName} ${assignment.user.lastName}`,
@@ -122,14 +123,14 @@ export async function POST() {
           documentsCount: project.documents.length,
           documents: project.documents,
         })),
-        assigned: safeUserData.projectAssignments.map(assignment => ({
+        assigned: safeUserData.projectAssignments.map((assignment) => ({
           assignmentId: assignment.id,
           assignedAt: assignment.assignedAt,
           project: assignment.project,
         })),
       },
       documents: {
-        uploaded: safeUserData.uploadedDocuments.map(doc => ({
+        uploaded: safeUserData.uploadedDocuments.map((doc) => ({
           id: doc.id,
           filename: doc.filename,
           originalFilename: doc.originalFilename,
@@ -140,25 +141,31 @@ export async function POST() {
           project: doc.project,
         })),
         totalCount: safeUserData.uploadedDocuments.length,
-        totalSize: safeUserData.uploadedDocuments.reduce((sum, doc) => sum + doc.fileSize, 0),
+        totalSize: safeUserData.uploadedDocuments.reduce(
+          (sum, doc) => sum + doc.fileSize,
+          0
+        ),
       },
       statistics: {
         projectsCreated: safeUserData.createdProjects.length,
         projectsAssigned: safeUserData.projectAssignments.length,
         documentsUploaded: safeUserData.uploadedDocuments.length,
-        totalStorageUsed: safeUserData.uploadedDocuments.reduce((sum, doc) => sum + doc.fileSize, 0),
+        totalStorageUsed: safeUserData.uploadedDocuments.reduce(
+          (sum, doc) => sum + doc.fileSize,
+          0
+        ),
       },
     };
 
     // Create JSON blob
     const jsonString = JSON.stringify(exportData, null, 2);
-    const blob = Buffer.from(jsonString, 'utf-8');
+    const blob = Buffer.from(jsonString, "utf-8");
 
     return new NextResponse(blob, {
       headers: {
-        'Content-Type': 'application/json',
-        'Content-Disposition': `attachment; filename="pixelforge-data-${new Date().toISOString().split('T')[0]}.json"`,
-        'Content-Length': blob.length.toString(),
+        "Content-Type": "application/json",
+        "Content-Disposition": `attachment; filename="pixelforge-data-${new Date().toISOString().split("T")[0]}.json"`,
+        "Content-Length": blob.length.toString(),
       },
     });
   } catch (error) {

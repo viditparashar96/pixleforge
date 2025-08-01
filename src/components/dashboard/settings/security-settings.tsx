@@ -1,24 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { 
-  Key, 
-  Smartphone, 
-  AlertTriangle, 
-  CheckCircle, 
-  Eye, 
-  EyeOff,
+import {
+  AlertTriangle,
+  CheckCircle,
   Copy,
-  Download
+  Download,
+  Eye,
+  EyeOff,
+  Key,
+  Smartphone,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface MFASetupData {
@@ -69,7 +74,7 @@ export function SecuritySettings() {
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
       toast.error("New passwords do not match");
       return;
@@ -106,7 +111,9 @@ export function SecuritySettings() {
         confirmPassword: "",
       });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to change password");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to change password"
+      );
     } finally {
       setIsLoadingPassword(false);
     }
@@ -124,20 +131,22 @@ export function SecuritySettings() {
       }
 
       const data = await response.json();
-      console.log('MFA Setup Data:', {
+      console.log("MFA Setup Data:", {
         hasSecret: !!data.secret,
         secretLength: data.secret?.length,
         hasQrCode: !!data.qrCode,
         hasBackupCodes: !!data.backupCodes,
         backupCodesCount: data.backupCodes?.length,
-        debug: data.debug
+        debug: data.debug,
       });
-      
+
       setMfaSetupData(data);
       setShowMFASetup(true);
     } catch (error) {
-      console.error('MFA setup error:', error);
-      toast.error(error instanceof Error ? error.message : "Failed to setup MFA");
+      console.error("MFA setup error:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to setup MFA"
+      );
     } finally {
       setIsLoadingMFA(false);
     }
@@ -149,11 +158,11 @@ export function SecuritySettings() {
       return;
     }
 
-    console.log('Attempting MFA verification:', {
+    console.log("Attempting MFA verification:", {
       code: verificationCode,
       codeLength: verificationCode.length,
-      secret: mfaSetupData?.secret?.substring(0, 8) + '...',
-      timestamp: new Date().toISOString()
+      secret: mfaSetupData?.secret?.substring(0, 8) + "...",
+      timestamp: new Date().toISOString(),
     });
 
     setIsLoadingMFA(true);
@@ -170,13 +179,15 @@ export function SecuritySettings() {
       });
 
       const responseData = await response.json();
-      console.log('MFA verification response:', responseData);
+      console.log("MFA verification response:", responseData);
 
       if (!response.ok) {
         // Show debug info if available
         if (responseData.debug) {
-          console.log('Debug info:', responseData.debug);
-          toast.error(`Invalid code. Expected: ${responseData.debug.expected} | You entered: ${responseData.debug.provided}`);
+          console.log("Debug info:", responseData.debug);
+          toast.error(
+            `Invalid code. Expected: ${responseData.debug.expected} | You entered: ${responseData.debug.provided}`
+          );
         } else {
           toast.error(responseData.error || "Invalid verification code");
         }
@@ -188,15 +199,21 @@ export function SecuritySettings() {
       setVerificationCode("");
       toast.success("Two-factor authentication enabled successfully");
     } catch (error) {
-      console.error('MFA verification error:', error);
-      toast.error(error instanceof Error ? error.message : "Failed to verify code");
+      console.error("MFA verification error:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to verify code"
+      );
     } finally {
       setIsLoadingMFA(false);
     }
   };
 
   const disableMFA = async () => {
-    if (!confirm("Are you sure you want to disable two-factor authentication? This will make your account less secure.")) {
+    if (
+      !confirm(
+        "Are you sure you want to disable two-factor authentication? This will make your account less secure."
+      )
+    ) {
       return;
     }
 
@@ -213,7 +230,9 @@ export function SecuritySettings() {
       setMfaEnabled(false);
       toast.success("Two-factor authentication disabled");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to disable MFA");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to disable MFA"
+      );
     } finally {
       setIsLoadingMFA(false);
     }
@@ -221,7 +240,7 @@ export function SecuritySettings() {
 
   const copyBackupCodes = () => {
     if (mfaSetupData?.backupCodes) {
-      navigator.clipboard.writeText(mfaSetupData.backupCodes.join('\n'));
+      navigator.clipboard.writeText(mfaSetupData.backupCodes.join("\n"));
       toast.success("Backup codes copied to clipboard");
     }
   };
@@ -236,28 +255,28 @@ Account: ${session?.user?.email}
 These backup codes can be used to access your account if you lose access to your authenticator app.
 Each code can only be used once.
 
-${mfaSetupData.backupCodes.map((code, index) => `${index + 1}. ${code}`).join('\n')}
+${mfaSetupData.backupCodes.map((code, index) => `${index + 1}. ${code}`).join("\n")}
 
 Keep these codes safe and secure!`;
 
-      const blob = new Blob([content], { type: 'text/plain' });
+      const blob = new Blob([content], { type: "text/plain" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = 'pixelforge-backup-codes.txt';
+      a.download = "pixelforge-backup-codes.txt";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      
+
       toast.success("Backup codes downloaded");
     }
   };
 
   const togglePasswordVisibility = (field: keyof typeof showPasswords) => {
-    setShowPasswords(prev => ({
+    setShowPasswords((prev) => ({
       ...prev,
-      [field]: !prev[field]
+      [field]: !prev[field],
     }));
   };
 
@@ -285,7 +304,12 @@ Keep these codes safe and secure!`;
                   id="currentPassword"
                   type={showPasswords.current ? "text" : "password"}
                   value={passwordForm.currentPassword}
-                  onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                  onChange={(e) =>
+                    setPasswordForm((prev) => ({
+                      ...prev,
+                      currentPassword: e.target.value,
+                    }))
+                  }
                   placeholder="Enter your current password"
                   required
                 />
@@ -294,9 +318,13 @@ Keep these codes safe and secure!`;
                   variant="ghost"
                   size="sm"
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => togglePasswordVisibility('current')}
+                  onClick={() => togglePasswordVisibility("current")}
                 >
-                  {showPasswords.current ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPasswords.current ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             </div>
@@ -308,7 +336,12 @@ Keep these codes safe and secure!`;
                   id="newPassword"
                   type={showPasswords.new ? "text" : "password"}
                   value={passwordForm.newPassword}
-                  onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                  onChange={(e) =>
+                    setPasswordForm((prev) => ({
+                      ...prev,
+                      newPassword: e.target.value,
+                    }))
+                  }
                   placeholder="Enter your new password"
                   required
                 />
@@ -317,9 +350,13 @@ Keep these codes safe and secure!`;
                   variant="ghost"
                   size="sm"
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => togglePasswordVisibility('new')}
+                  onClick={() => togglePasswordVisibility("new")}
                 >
-                  {showPasswords.new ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPasswords.new ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             </div>
@@ -331,7 +368,12 @@ Keep these codes safe and secure!`;
                   id="confirmPassword"
                   type={showPasswords.confirm ? "text" : "password"}
                   value={passwordForm.confirmPassword}
-                  onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                  onChange={(e) =>
+                    setPasswordForm((prev) => ({
+                      ...prev,
+                      confirmPassword: e.target.value,
+                    }))
+                  }
                   placeholder="Confirm your new password"
                   required
                 />
@@ -340,9 +382,13 @@ Keep these codes safe and secure!`;
                   variant="ghost"
                   size="sm"
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => togglePasswordVisibility('confirm')}
+                  onClick={() => togglePasswordVisibility("confirm")}
                 >
-                  {showPasswords.confirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPasswords.confirm ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             </div>
@@ -368,7 +414,8 @@ Keep these codes safe and secure!`;
             )}
           </CardTitle>
           <CardDescription>
-            Add an extra layer of security to your account with two-factor authentication.
+            Add an extra layer of security to your account with two-factor
+            authentication.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -378,12 +425,15 @@ Keep these codes safe and secure!`;
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>Two-factor authentication is disabled</AlertTitle>
                 <AlertDescription>
-                  Your account is more vulnerable without 2FA. Enable it now to improve your security.
+                  Your account is more vulnerable without 2FA. Enable it now to
+                  improve your security.
                 </AlertDescription>
               </Alert>
-              
+
               <Button onClick={setupMFA} disabled={isLoadingMFA}>
-                {isLoadingMFA ? "Setting up..." : "Enable Two-Factor Authentication"}
+                {isLoadingMFA
+                  ? "Setting up..."
+                  : "Enable Two-Factor Authentication"}
               </Button>
             </>
           ) : (
@@ -395,9 +445,15 @@ Keep these codes safe and secure!`;
                   Your account is protected with two-factor authentication.
                 </AlertDescription>
               </Alert>
-              
-              <Button variant="destructive" onClick={disableMFA} disabled={isLoadingMFA}>
-                {isLoadingMFA ? "Disabling..." : "Disable Two-Factor Authentication"}
+
+              <Button
+                variant="destructive"
+                onClick={disableMFA}
+                disabled={isLoadingMFA}
+              >
+                {isLoadingMFA
+                  ? "Disabling..."
+                  : "Disable Two-Factor Authentication"}
               </Button>
             </>
           )}
@@ -406,14 +462,17 @@ Keep these codes safe and secure!`;
           {showMFASetup && mfaSetupData && (
             <div className="space-y-6 border rounded-lg p-6 bg-muted/20">
               <div className="space-y-2">
-                <h3 className="text-lg font-semibold">Set up Two-Factor Authentication</h3>
+                <h3 className="text-lg font-semibold">
+                  Set up Two-Factor Authentication
+                </h3>
                 <p className="text-sm text-muted-foreground">
-                  Scan the QR code below with your authenticator app (Google Authenticator, Authy, etc.)
+                  Scan the QR code below with your authenticator app (Google
+                  Authenticator, Authy, etc.)
                 </p>
               </div>
 
               <div className="flex justify-center">
-                <div 
+                <div
                   className="bg-white p-4 rounded-lg"
                   dangerouslySetInnerHTML={{ __html: mfaSetupData.qrCode }}
                 />
@@ -422,9 +481,9 @@ Keep these codes safe and secure!`;
               <div className="space-y-2">
                 <Label>Manual Entry Key</Label>
                 <div className="flex gap-2">
-                  <Input 
-                    value={mfaSetupData.secret} 
-                    readOnly 
+                  <Input
+                    value={mfaSetupData.secret}
+                    readOnly
                     className="font-mono text-sm"
                   />
                   <Button
@@ -440,21 +499,24 @@ Keep these codes safe and secure!`;
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Add this manually to your authenticator app if the QR code doesn&apos;t work
+                  Add this manually to your authenticator app if the QR code
+                  doesn&apos;t work
                 </p>
               </div>
-
 
               {/* Debug Info */}
               {mfaSetupData.debug && (
                 <div className="space-y-2 p-3 bg-muted/30 rounded-lg">
-                  <Label className="text-xs font-medium text-muted-foreground">Debug Info</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    Debug Info
+                  </Label>
                   <div className="text-xs font-mono space-y-1">
                     <div>Server Token: {mfaSetupData.debug.testToken}</div>
                     <div>Time: {new Date().toLocaleTimeString()}</div>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Your authenticator app should show this token within 30 seconds.
+                    Your authenticator app should show this token within 30
+                    seconds.
                   </p>
                 </div>
               )}
@@ -464,7 +526,11 @@ Keep these codes safe and secure!`;
                 <Input
                   id="verificationCode"
                   value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  onChange={(e) =>
+                    setVerificationCode(
+                      e.target.value.replace(/\D/g, "").slice(0, 6)
+                    )
+                  }
                   placeholder="Enter 6-digit code"
                   className="text-center font-mono text-lg tracking-widest"
                   maxLength={6}
@@ -504,19 +570,20 @@ Keep these codes safe and secure!`;
                   ))}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Save these backup codes in a safe place. Each code can only be used once.
+                  Save these backup codes in a safe place. Each code can only be
+                  used once.
                 </p>
               </div>
 
               <div className="flex gap-2">
-                <Button 
-                  onClick={verifyAndEnableMFA} 
+                <Button
+                  onClick={verifyAndEnableMFA}
                   disabled={isLoadingMFA || verificationCode.length !== 6}
                 >
                   {isLoadingMFA ? "Verifying..." : "Verify & Enable"}
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => {
                     setShowMFASetup(false);
                     setMfaSetupData(null);

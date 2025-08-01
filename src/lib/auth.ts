@@ -1,10 +1,10 @@
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { db } from "./db";
 import { SignInSchema } from "./validations";
-import jwt from "jsonwebtoken";
 
 const BCRYPT_SALT_ROUNDS = parseInt(process.env.BCRYPT_SALT_ROUNDS || "12");
 
@@ -13,7 +13,7 @@ async function handleMFALogin(email: string, mfaToken: string) {
   try {
     // Verify the MFA token
     const decoded = jwt.verify(
-      mfaToken, 
+      mfaToken,
       process.env.NEXTAUTH_SECRET || "fallback-secret"
     ) as { mfaVerified: boolean; email: string; userId: string };
 
@@ -65,6 +65,7 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
         mfaToken: { label: "MFA Token", type: "text" },
+        rememberMe: { label: "Remember Me", type: "checkbox" },
       },
       async authorize(credentials) {
         try {
@@ -74,7 +75,10 @@ export const authOptions: NextAuthOptions = {
 
           // Check if this is an MFA verification (mfaToken provided)
           if (credentials.mfaToken) {
-            return await handleMFALogin(credentials.email, credentials.mfaToken);
+            return await handleMFALogin(
+              credentials.email,
+              credentials.mfaToken
+            );
           }
 
           // Regular password authentication
@@ -86,7 +90,7 @@ export const authOptions: NextAuthOptions = {
           const validatedCredentials = SignInSchema.parse({
             email: credentials.email,
             password: credentials.password,
-            rememberMe: credentials.rememberMe === 'true' || credentials.rememberMe === true,
+            rememberMe: credentials.rememberMe === "true",
           });
 
           // Find user in database
@@ -144,12 +148,6 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role;
         token.firstName = user.firstName;
         token.lastName = user.lastName;
-        token.createdAt = user.createdAt;
-        if (user.rememberMe) {
-          token.rememberMe = true;
-          // Extend expiry to 30 days for remember me
-          token.exp = Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60); // 30 days
-        }
       }
       return token;
     },
@@ -159,7 +157,6 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role as string;
         session.user.firstName = token.firstName as string;
         session.user.lastName = token.lastName as string;
-        session.user.createdAt = token.createdAt as string;
       }
       return session;
     },

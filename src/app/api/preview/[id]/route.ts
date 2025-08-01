@@ -1,7 +1,7 @@
 import { authOptions } from "@/lib/auth";
 import { generateDirectCloudinaryUrl } from "@/lib/cloudinary";
-import { generateDirectImageKitUrl } from "@/lib/imagekit";
 import { db } from "@/lib/db";
+import { generateDirectImageKitUrl } from "@/lib/imagekit";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -70,59 +70,78 @@ export async function GET(
       );
     }
 
-    console.log('Document preview request:', {
+    console.log("Document preview request:", {
       id: documentId,
       storageProvider: document.storageProvider,
       imagekitUrl: document.imagekitUrl,
       imagekitFilePath: document.imagekitFilePath,
       cloudinaryUrl: document.cloudinaryUrl,
       cloudinaryPublicId: document.cloudinaryPublicId,
-      mimeType: document.mimeType
+      mimeType: document.mimeType,
     });
 
     // Handle based on storage provider
     if (document.storageProvider === "imagekit" && document.imagekitUrl) {
       // For ImageKit documents, use the direct URL
-      const directUrl = generateDirectImageKitUrl(document.imagekitFilePath || "");
-      
-      console.log('Generated ImageKit URL:', directUrl);
-      
+      const directUrl = generateDirectImageKitUrl(
+        document.imagekitFilePath || ""
+      );
+
+      console.log("Generated ImageKit URL:", directUrl);
+
       if (!directUrl) {
-        console.error('ImageKit URL generation failed for path:', document.imagekitFilePath);
+        console.error(
+          "ImageKit URL generation failed for path:",
+          document.imagekitFilePath
+        );
         return NextResponse.json(
-          { error: "Preview URL generation failed", path: document.imagekitFilePath },
+          {
+            error: "Preview URL generation failed",
+            path: document.imagekitFilePath,
+          },
           { status: 500 }
         );
       }
-      
+
       return NextResponse.redirect(directUrl, 302);
-    } else if (document.storageProvider === "cloudinary" && document.cloudinaryUrl) {
+    } else if (
+      document.storageProvider === "cloudinary" &&
+      document.cloudinaryUrl
+    ) {
       // For Cloudinary documents (legacy)
       let directUrl: string;
-      
+
       if (
         document.mimeType.startsWith("image/") ||
         document.mimeType === "application/pdf"
       ) {
         // Try direct URL first for untrusted accounts
+        // @ts-expect-error - generateDirectCloudinaryUrl may not be typed correctly
         directUrl = generateDirectCloudinaryUrl(
           document.cloudinaryPublicId || "",
           document.mimeType.startsWith("image/") ? "image" : "raw"
         );
       } else {
         // For other file types, use direct URL
+        // @ts-expect-error - generateDirectCloudinaryUrl may not be typed correctly
         directUrl = generateDirectCloudinaryUrl(
           document.cloudinaryPublicId || "",
           "raw"
         );
       }
-      
-      console.log('Generated Cloudinary URL:', directUrl);
-      
+
+      console.log("Generated Cloudinary URL:", directUrl);
+
       if (!directUrl) {
-        console.error('Cloudinary URL generation failed for publicId:', document.cloudinaryPublicId);
+        console.error(
+          "Cloudinary URL generation failed for publicId:",
+          document.cloudinaryPublicId
+        );
         return NextResponse.json(
-          { error: "Preview URL generation failed", publicId: document.cloudinaryPublicId },
+          {
+            error: "Preview URL generation failed",
+            publicId: document.cloudinaryPublicId,
+          },
           { status: 500 }
         );
       }
