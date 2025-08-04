@@ -1,16 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm install:*)",
-      "Bash(npx shadcn@latest add:*)",
-      "Bash(npx prisma:*)",
-      "Bash(mkdir:*)",
-      "Bash(npm run dev:*)",
       "Bash(npm run:*)",
-      "Bash(curl:*)",
-      "Bash(npx eslint:*)",
-      "Bash(npx tsc:*)",
-      "Bash(powershell:*)"
+      "Bash(npm install:*)",
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(npx prisma:*)",
+      "Bash(powershell \"Start-Process -FilePath ''npm'' -ArgumentList ''run'', ''db:generate'' -Verb RunAs -WindowStyle Hidden -Wait\")"
     ],
     "deny": []
   }

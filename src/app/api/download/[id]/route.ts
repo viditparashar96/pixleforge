@@ -21,17 +21,21 @@ export async function GET(
     const { id } = await params;
     const validatedId = IdSchema.parse(id);
 
-    // Find document with project info
-    const document = await db.document.findUnique({
+    // Try to find document version first (new system)
+    const documentVersion = await db.documentVersion.findUnique({
       where: {
         id: validatedId,
       },
       include: {
-        project: {
+        documentGroup: {
           include: {
-            assignments: {
-              select: {
-                userId: true,
+            project: {
+              include: {
+                assignments: {
+                  select: {
+                    userId: true,
+                  },
+                },
               },
             },
           },
@@ -39,17 +43,42 @@ export async function GET(
       },
     });
 
-    if (!document) {
+    // If not found, try legacy document system
+    let document = null;
+    if (!documentVersion) {
+      document = await db.document.findUnique({
+        where: {
+          id: validatedId,
+        },
+        include: {
+          project: {
+            include: {
+              assignments: {
+                select: {
+                  userId: true,
+                },
+              },
+            },
+          },
+        },
+      });
+    }
+
+    if (!documentVersion && !document) {
       return NextResponse.json(
         { error: "Document not found" },
         { status: 404 }
       );
     }
 
+    // Use documentVersion if available, otherwise use legacy document
+    const currentDoc = documentVersion || document!;
+    const project = documentVersion ? documentVersion.documentGroup.project : document!.project;
+
     // Check access permissions
     const isAdmin = session.user.role === "ADMIN";
-    const isCreator = document.project.createdById === session.user.id;
-    const isAssigned = document.project.assignments.some(
+    const isCreator = project.createdById === session.user.id;
+    const isAssigned = project.assignments.some(
       (assignment) => assignment.userId === session.user.id
     );
 
@@ -61,25 +90,25 @@ export async function GET(
     }
 
     // Handle based on storage provider
-    if (document.storageProvider === "imagekit" && document.imagekitUrl) {
+    if (currentDoc.storageProvider === "imagekit" && currentDoc.imagekitUrl) {
       // For ImageKit documents, use the direct URL with download disposition
-      const downloadUrl = generateDirectImageKitUrl(document.imagekitFilePath || "");
+      const downloadUrl = generateDirectImageKitUrl(currentDoc.imagekitFilePath || "");
       
       // ImageKit supports download parameter
       return NextResponse.redirect(
         `${downloadUrl}?ik-attachment=true`
       );
-    } else if (document.storageProvider === "cloudinary" && document.cloudinaryUrl) {
+    } else if (currentDoc.storageProvider === "cloudinary" && currentDoc.cloudinaryUrl) {
       // For Cloudinary documents (legacy)
       const downloadUrl = generateDirectCloudinaryUrl(
-        document.cloudinaryPublicId || "",
-        document.mimeType.startsWith("image/") ? "image" : "raw"
+        currentDoc.cloudinaryPublicId || "",
+        currentDoc.mimeType.startsWith("image/") ? "image" : "raw"
       );
 
       // Redirect to the direct Cloudinary URL with download disposition
       return NextResponse.redirect(
         `${downloadUrl}?fl_attachment=${encodeURIComponent(
-          document.originalFilename
+          currentDoc.originalFilename
         )}`
       );
     } else {

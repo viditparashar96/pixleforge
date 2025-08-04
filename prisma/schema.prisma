@@ -8,85 +8,113 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String   @map("password_hash")
-  firstName    String   @map("first_name")
-  lastName     String   @map("last_name")
-  role         Role
-  mfaSecret    String?  @map("mfa_secret")
-  mfaEnabled   Boolean  @default(false) @map("mfa_enabled")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-
-  createdProjects    Project[]           @relation("ProjectCreator")
-  projectAssignments ProjectAssignment[]
-  uploadedDocuments  Document[]
-  assignedBy         ProjectAssignment[] @relation("AssignedBy")
-  passwordResetTokens PasswordResetToken[]
+  id                       String               @id @default(cuid())
+  email                    String               @unique
+  passwordHash             String               @map("password_hash")
+  firstName                String               @map("first_name")
+  lastName                 String               @map("last_name")
+  role                     Role
+  mfaSecret                String?              @map("mfa_secret")
+  mfaEnabled               Boolean              @default(false) @map("mfa_enabled")
+  createdAt                DateTime             @default(now()) @map("created_at")
+  updatedAt                DateTime             @updatedAt @map("updated_at")
+  uploadedDocumentVersions DocumentVersion[]
+  uploadedDocuments        Document[]
+  passwordResetTokens      PasswordResetToken[]
+  assignedBy               ProjectAssignment[]  @relation("AssignedBy")
+  projectAssignments       ProjectAssignment[]
+  createdProjects          Project[]            @relation("ProjectCreator")
 
   @@map("users")
 }
 
 model Project {
-  id          String        @id @default(cuid())
-  name        String
-  description String
-  deadline    DateTime
-  status      ProjectStatus @default(ACTIVE)
-  createdById String        @map("created_by")
-  createdAt   DateTime      @default(now()) @map("created_at")
-  updatedAt   DateTime      @updatedAt @map("updated_at")
-
-  createdBy   User                @relation("ProjectCreator", fields: [createdById], references: [id])
-  assignments ProjectAssignment[]
-  documents   Document[]
+  id             String              @id @default(cuid())
+  name           String
+  description    String
+  deadline       DateTime
+  status         ProjectStatus       @default(ACTIVE)
+  createdById    String              @map("created_by")
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+  documentGroups DocumentGroup[]
+  documents      Document[]
+  assignments    ProjectAssignment[]
+  createdBy      User                @relation("ProjectCreator", fields: [createdById], references: [id])
 
   @@map("projects")
 }
 
 model ProjectAssignment {
-  id          String   @id @default(cuid())
-  projectId   String   @map("project_id")
-  userId      String   @map("user_id")
-  assignedById String  @map("assigned_by")
-  assignedAt  DateTime @default(now()) @map("assigned_at")
-
-  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  assignedBy User    @relation("AssignedBy", fields: [assignedById], references: [id])
+  id           String   @id @default(cuid())
+  projectId    String   @map("project_id")
+  userId       String   @map("user_id")
+  assignedById String   @map("assigned_by")
+  assignedAt   DateTime @default(now()) @map("assigned_at")
+  assignedBy   User     @relation("AssignedBy", fields: [assignedById], references: [id])
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, userId])
   @@map("project_assignments")
 }
 
 model Document {
-  id               String   @id @default(cuid())
-  projectId        String   @map("project_id")
-  filename         String
-  originalFilename String   @map("original_filename")
-  
-  // Cloudinary fields (legacy - keeping for backup)
-  cloudinaryPublicId String? @map("cloudinary_public_id")
-  cloudinaryUrl      String? @map("cloudinary_url")
-  
-  // ImageKit fields (new primary storage)
-  imagekitFileId     String? @map("imagekit_file_id")
-  imagekitUrl        String? @map("imagekit_url")
-  imagekitFilePath   String? @map("imagekit_file_path")
-  
-  fileSize         Int      @map("file_size")
-  mimeType         String   @map("mime_type")
-  uploadedById     String   @map("uploaded_by")
-  uploadedAt       DateTime @default(now()) @map("uploaded_at")
-  
-  // Storage provider field to track which service is being used
-  storageProvider  String   @default("imagekit") @map("storage_provider") // "cloudinary" or "imagekit"
-
-  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  uploadedBy User    @relation(fields: [uploadedById], references: [id])
+  id                 String   @id @default(cuid())
+  projectId          String   @map("project_id")
+  filename           String
+  originalFilename   String   @map("original_filename")
+  cloudinaryPublicId String?  @map("cloudinary_public_id")
+  cloudinaryUrl      String?  @map("cloudinary_url")
+  imagekitFileId     String?  @map("imagekit_file_id")
+  imagekitUrl        String?  @map("imagekit_url")
+  imagekitFilePath   String?  @map("imagekit_file_path")
+  fileSize           Int      @map("file_size")
+  mimeType           String   @map("mime_type")
+  uploadedById       String   @map("uploaded_by")
+  uploadedAt         DateTime @default(now()) @map("uploaded_at")
+  storageProvider    String   @default("imagekit") @map("storage_provider")
+  project            Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploadedBy         User     @relation(fields: [uploadedById], references: [id])
 
   @@map("documents")
+}
+
+model DocumentGroup {
+  id        String            @id @default(cuid())
+  projectId String            @map("project_id")
+  name      String
+  createdAt DateTime          @default(now()) @map("created_at")
+  updatedAt DateTime          @updatedAt @map("updated_at")
+  project   Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  versions  DocumentVersion[]
+
+  @@map("document_groups")
+}
+
+model DocumentVersion {
+  id                 String        @id @default(cuid())
+  documentGroupId    String        @map("document_group_id")
+  versionNumber      Int           @map("version_number")
+  filename           String
+  originalFilename   String        @map("original_filename")
+  cloudinaryPublicId String?       @map("cloudinary_public_id")
+  cloudinaryUrl      String?       @map("cloudinary_url")
+  imagekitFileId     String?       @map("imagekit_file_id")
+  imagekitUrl        String?       @map("imagekit_url")
+  imagekitFilePath   String?       @map("imagekit_file_path")
+  fileSize           Int           @map("file_size")
+  mimeType           String        @map("mime_type")
+  storageProvider    String        @default("imagekit") @map("storage_provider")
+  uploadedById       String        @map("uploaded_by")
+  uploadedAt         DateTime      @default(now()) @map("uploaded_at")
+  versionNotes       String?       @map("version_notes")
+  isLatest           Boolean       @default(true) @map("is_latest")
+  documentGroup      DocumentGroup @relation(fields: [documentGroupId], references: [id], onDelete: Cascade)
+  uploadedBy         User          @relation(fields: [uploadedById], references: [id])
+
+  @@unique([documentGroupId, versionNumber])
+  @@map("document_versions")
 }
 
 model PasswordResetToken {
@@ -96,8 +124,7 @@ model PasswordResetToken {
   expiresAt DateTime @map("expires_at")
   createdAt DateTime @default(now()) @map("created_at")
   used      Boolean  @default(false)
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("password_reset_tokens")
 }

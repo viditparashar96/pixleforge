@@ -1,11 +1,13 @@
 import { ProjectActions } from "@/components/dashboard/project-actions";
 import { ProjectDocuments } from "@/components/dashboard/project-documents";
+import { ProjectDocumentsVersioned } from "@/components/dashboard/project-documents-versioned";
 import { ProjectHeader } from "@/components/dashboard/project-header";
 import { TeamMembers } from "@/components/dashboard/team-members";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/actions/auth";
 import { getProjectDocuments } from "@/lib/actions/documents-helper";
+import { getProjectDocumentGroups } from "@/lib/actions/documents-helper-versioned";
 import { getProjectById } from "@/lib/actions/projects";
 import { formatDistanceToNow } from "date-fns";
 import { CalendarDays, FileText, User as UserIcon, Users } from "lucide-react";
@@ -43,7 +45,14 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     redirect("/dashboard/projects");
   }
 
-  const documents = await getProjectDocuments(id);
+  // Get both versioned documents and legacy documents
+  const [documentGroupsResult, legacyDocuments] = await Promise.all([
+    getProjectDocumentGroups(id),
+    getProjectDocuments(id)
+  ]);
+
+  const documentGroups = documentGroupsResult.success ? documentGroupsResult.data : [];
+  const totalDocuments = (documentGroups?.length || 0) + legacyDocuments.length;
 
   return (
     <div className="space-y-6">
@@ -100,8 +109,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">
-                    {documents.length} document
-                    {documents.length !== 1 ? "s" : ""}
+                    {totalDocuments} document
+                    {totalDocuments !== 1 ? "s" : ""}
                   </span>
                 </div>
 
@@ -116,18 +125,18 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             </CardContent>
           </Card>
 
-          {/* Documents */}
-          <ProjectDocuments
-            documents={documents}
+          {/* Documents - Always use versioned component */}
+          <ProjectDocumentsVersioned
+            documentGroups={documentGroups || []}
             projectId={project.id}
             userRole={user.role}
             canUpload={
               user.role === "ADMIN" ||
               (user.role === "PROJECT_LEAD" &&
-                project.createdById === user.id) ||
-              project.assignments.some((a) => a.userId === user.id)
+                project.createdById === user.id)
             }
           />
+
         </div>
 
         {/* Sidebar */}

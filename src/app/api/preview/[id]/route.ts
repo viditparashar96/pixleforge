@@ -19,36 +19,66 @@ export async function GET(
     const { id } = await params;
     const documentId = id;
 
-    // Get document from database
-    const document = await db.document.findUnique({
+    // Try to find document version first (new system)
+    const documentVersion = await db.documentVersion.findUnique({
       where: {
         id: documentId,
       },
       include: {
-        project: {
+        documentGroup: {
           include: {
-            assignments: {
-              where: {
-                userId: session.user.id,
+            project: {
+              include: {
+                assignments: {
+                  where: {
+                    userId: session.user.id,
+                  },
+                },
+                createdBy: true,
               },
             },
-            createdBy: true,
           },
         },
       },
     });
 
-    if (!document) {
+    // If not found, try legacy document system
+    let document = null;
+    if (!documentVersion) {
+      document = await db.document.findUnique({
+        where: {
+          id: documentId,
+        },
+        include: {
+          project: {
+            include: {
+              assignments: {
+                where: {
+                  userId: session.user.id,
+                },
+              },
+              createdBy: true,
+            },
+          },
+        },
+      });
+    }
+
+    if (!documentVersion && !document) {
       return NextResponse.json(
         { error: "Document not found" },
         { status: 404 }
       );
     }
 
+    // Use documentVersion if available, otherwise use legacy document
+    const currentDoc = documentVersion || document!;
+    const project = documentVersion ? documentVersion.documentGroup.project : document!.project;
+
     // Check access permissions
     const isAdmin = session.user.role === "ADMIN";
-    const isProjectCreator = document.project.createdById === session.user.id;
-    const isAssigned = document.project.assignments.length > 0;
+    const isProjectCreator = project.createdById === session.user.id;
+    const isAssigned = project.assignments.length > 0;
 
     if (!isAdmin && !isProjectCreator && !isAssigned) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
@@ -63,7 +93,7 @@ export async function GET(
       "text/plain",
     ];
 
-    if (!previewableMimeTypes.includes(document.mimeType)) {
+    if (!previewableMimeTypes.includes(currentDoc.mimeType)) {
       return NextResponse.json(
         { error: "File type not previewable" },
         { status: 400 }
@@ -72,19 +102,20 @@ export async function GET(
 
     console.log("Document preview request:", {
       id: documentId,
-      storageProvider: document.storageProvider,
-      imagekitUrl: document.imagekitUrl,
-      imagekitFilePath: document.imagekitFilePath,
-      cloudinaryUrl: document.cloudinaryUrl,
-      cloudinaryPublicId: document.cloudinaryPublicId,
-      mimeType: document.mimeType,
+      isVersioned: !!documentVersion,
+      storageProvider: currentDoc.storageProvider,
+      imagekitUrl: currentDoc.imagekitUrl,
+      imagekitFilePath: currentDoc.imagekitFilePath,
+      cloudinaryUrl: currentDoc.cloudinaryUrl,
+      cloudinaryPublicId: currentDoc.cloudinaryPublicId,
+      mimeType: currentDoc.mimeType,
     });
 
     // Handle based on storage provider
-    if (document.storageProvider === "imagekit" && document.imagekitUrl) {
+    if (currentDoc.storageProvider === "imagekit" && currentDoc.imagekitUrl) {
       // For ImageKit documents, use the direct URL
       const directUrl = generateDirectImageKitUrl(
-        document.imagekitFilePath || ""
+        currentDoc.imagekitFilePath || ""
       );
 
       console.log("Generated ImageKit URL:", directUrl);
@@ -92,12 +123,12 @@ export async function GET(
       if (!directUrl) {
         console.error(
           "ImageKit URL generation failed for path:",
-          document.imagekitFilePath
+          currentDoc.imagekitFilePath
         );
         return NextResponse.json(
           {
             error: "Preview URL generation failed",
-            path: document.imagekitFilePath,
+            path: currentDoc.imagekitFilePath,
           },
           { status: 500 }
         );
@@ -105,27 +136,27 @@ export async function GET(
 
       return NextResponse.redirect(directUrl, 302);
     } else if (
-      document.storageProvider === "cloudinary" &&
-      document.cloudinaryUrl
+      currentDoc.storageProvider === "cloudinary" &&
+      currentDoc.cloudinaryUrl
     ) {
       // For Cloudinary documents (legacy)
       let directUrl: string;
 
       if (
-        document.mimeType.startsWith("image/") ||
-        document.mimeType === "application/pdf"
+        currentDoc.mimeType.startsWith("image/") ||
+        currentDoc.mimeType === "application/pdf"
       ) {
         // Try direct URL first for untrusted accounts
         // @ts-expect-error - generateDirectCloudinaryUrl may not be typed correctly
         directUrl = generateDirectCloudinaryUrl(
-          document.cloudinaryPublicId || "",
-          document.mimeType.startsWith("image/") ? "image" : "raw"
+          currentDoc.cloudinaryPublicId || "",
+          currentDoc.mimeType.startsWith("image/") ? "image" : "raw"
         );
       } else {
         // For other file types, use direct URL
         // @ts-expect-error - generateDirectCloudinaryUrl may not be typed correctly
         directUrl = generateDirectCloudinaryUrl(
-          document.cloudinaryPublicId || "",
+          currentDoc.cloudinaryPublicId || "",
           "raw"
         );
       }
@@ -135,12 +166,12 @@ export async function GET(
       if (!directUrl) {
         console.error(
           "Cloudinary URL generation failed for publicId:",
-          document.cloudinaryPublicId
+          currentDoc.cloudinaryPublicId
         );
         return NextResponse.json(
           {
             error: "Preview URL generation failed",
-            publicId: document.cloudinaryPublicId,
+            publicId: currentDoc.cloudinaryPublicId,
           },
           { status: 500 }
         );

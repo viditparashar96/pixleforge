@@ -1,10 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { uploadDocumentToImageKit } from "@/lib/actions/documents-imagekit";
+import { uploadDocumentVersion } from "@/lib/actions/documents-versioned";
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const result = await uploadDocumentToImageKit(formData);
+    
+    // Extract version control options from form data
+    const documentGroupId = formData.get("documentGroupId") as string | null;
+    const versionNotes = formData.get("versionNotes") as string | null;
+    const replaceLatest = formData.get("replaceLatest") === "true";
+
+    const options = {
+      documentGroupId: documentGroupId || undefined,
+      versionNotes: versionNotes || undefined,
+      replaceLatest,
+    };
+
+    const result = await uploadDocumentVersion(formData, options);
 
     if (!result.success) {
       return NextResponse.json(
